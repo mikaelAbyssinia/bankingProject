@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
 const cors = require('cors');
 const authRoute = require('./authRoute');
 
@@ -23,7 +25,23 @@ db.once('open', () => {
   console.log('Connected to the database');
 });
 
+const store = new MongoDBStore({
+  uri: 'mongodb://localhost:27017/OurBank',
+  collection: 'sessions',
+});
 
+store.on('error', function (error) {
+  console.error('MongoDBStore error:', error);
+});
+
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  store: store,
+  }));
+
+  
 app.use(cors());
 
 app.use(bodyParser.urlencoded({ extended: true }));
