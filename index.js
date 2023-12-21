@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config();
+const authRoute = require('./authRoute');
 
 
 const { User, Account, Transaction } = require('./models');
@@ -24,8 +24,6 @@ db.once('open', () => {
 });
 
 
-
-
 app.use(cors());
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -33,18 +31,7 @@ app.use(bodyParser.json());
 
 
 
-app.post('/register', async(req, res) => {
-  try{
-    const { name, email, username, password } = req.body;
-    const newUser = new User({ name, email, username, password });
-    const savedUser = await newUser.save();
-    console.log(name, email, username, password);
-    res.status(200).json({ message: 'data has been saved in the database!!' });
-  }
-  catch(error){
-    res.status(500).json({ error: error.message });
-  }
-  });
+app.use('/auth', authRoute);
 
 
 app.post('/login', (req, res) => {
