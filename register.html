@@ -92,6 +92,7 @@
           // Handle the response from the server
           console.log(data);
           alert('Registration successful!');
+          window.location.href = 'http://127.0.0.1:3001/login.html';
       })
       .catch(error => {
           console.error('Error:', error);
