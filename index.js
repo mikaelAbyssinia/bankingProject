@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
-const MongoDBStore = require('connect-mongodb-session')(session);
+const MongoStore = require('connect-mongo');
 const cors = require('cors');
 const authRoute = require('./authRoute');
 
@@ -14,10 +14,7 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 
-mongoose.connect('mongodb://localhost:27017/OurBank', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect('mongodb://localhost:27017/OurBank')
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
@@ -25,38 +22,33 @@ db.once('open', () => {
   console.log('Connected to the database');
 });
 
-const store = new MongoDBStore({
-  uri: 'mongodb://localhost:27017/OurBank',
-  collection: 'sessions',
-});
-
-store.on('error', function (error) {
-  console.error('MongoDBStore error:', error);
-});
 
 app.use(session({
   secret: 'your-secret-key',
   resave: false,
   saveUninitialized: true,
-  store: store,
+  store: MongoStore.create({
+    mongoUrl: 'mongodb://localhost:27017/OurBank',
+    ttl: 60 * 60 * 24, // Time-to-live for sessions in seconds (optional)
+  }),
+  cookie: {
+    secure: false, // Set to true if using HTTPS
+    httpOnly: true,
+    maxAge: 3600000, // 1 hour (adjust as needed)
+},
   }));
 
   
-app.use(cors());
+  app.use(cors({ 
+    origin: 'http://127.0.0.1:3000',  // Specify the allowed origin
+    credentials: true  // Allow credentials (cookies)
+}));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
-
 app.use('/auth', authRoute);
-
-
-app.post('/login', (req, res) => {
-    const { username, password} = req.body;
-    console.log(username, password);
-    res.status(200).json({ message: 'JSON data received' });
-})
 
 app.use((err, req, res, next) => {
 console.error(err.stack);

@@ -54,7 +54,7 @@
       <!-- Right-aligned items -->
       <div class="navbar-nav ml-auto">
         <li class="nav-item">
-          <a class="nav-link" href="#" data-toggle="modal" data-target="#logoutModal">Username</a>
+          <span id="usernameDisplay" class="nav-link" data-toggle="modal" data-target="#logoutModal">Username</span>
         </li>
       </div>
     </div>
@@ -88,7 +88,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-          <a href="index.html" class="btn btn-primary">Logout</a>
+          <a href="index.html" class="btn btn-primary" id = "logout-btn">Logout</a>
         </div>
       </div>
     </div>
@@ -110,8 +110,28 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
   <script>
-    // Script to handle logout modal
-    const usernameLink = document.getElementById('username');
+
+function logoutUser() {
+    return fetch('http://localhost:3000/auth/logout', {
+      method: 'POST', // or 'GET' depending on your server setup
+      // Add headers if needed (e.g., for authentication)
+    });
+  }
+
+  fetch('http://localhost:3000/auth/home', {
+    method: 'GET',
+    credentials: 'include',
+  })
+      .then(response => response.json())
+      .then(data => {
+          const usernameDisplay = document.getElementById('usernameDisplay');
+          if (data.username) {
+              usernameDisplay.textContent = data.username;
+          }
+      })
+      .catch(error => console.error('Error fetching username:', error));
+
+    const usernameLink = document.getElementById('usernameDisplay');
     const logoutModal = document.getElementById('logoutModal');
     const logoutButton = document.getElementById('logout-btn');
 
@@ -120,9 +140,22 @@
     });
 
     logoutButton.addEventListener('click', () => {
-        // Redirect to index.html on logout
-        window.location.href = 'index.html';
-    });
+    // Send a fetch request to log out the user
+    logoutUser()
+      .then(response => {
+        if (response.ok) {
+          // If logout was successful, redirect to index.html
+          window.location.href = 'index.html';
+        } else {
+          // Handle unsuccessful logout (show an error message or take appropriate action)
+          console.error('Logout failed:', response.statusText);
+        }
+      })
+      .catch(error => {
+        // Handle fetch error (show an error message or take appropriate action)
+        console.error('Error during logout:', error);
+      });
+  });
 </script>
 
 </body>
