@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomePage</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom Styles -->
+  <style>
+    /* Add your custom styles here */
+    .carousel-inner img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .footer {
+      background-color: #f8f9fa;
+      padding: 20px 0;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand" href="home.html">
+        <!-- Banking Icon (Replace with your icon) -->
+        <img src="images/bankSVG.svg" alt="Banking Icon" height="30">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="withdraw.html">Withdraw</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="deposit.html">Deposit</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="transfer.html">Transfer</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="balance.html">Balance</a>
+          </li>
+        </ul>
+      </div>
+      <!-- Right-aligned items -->
+      <div class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#" data-toggle="modal" data-target="#logoutModal">Username</a>
+        </li>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Carousel -->
+  <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+        <img src="images/homeIM1.jpg" class="d-block w-100" alt="Carousel Image 1">
+      </div>
+      <div class="carousel-item">
+        <img src="images/homeIM2.jpg" class="d-block w-100" alt="Carousel Image 2">
+      </div>
+      <!-- Add more carousel items as needed -->
+    </div>
+  </div>
+
+  <!-- Logout Modal -->
+  <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="logoutModalLabel">Logout</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to logout?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <a href="index.html" class="btn btn-primary">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="container">
+      <p>&copy; 2023 Your Bank. All rights reserved.</p>
+      <p>
+        <a href="withdraw.html">Withdraw</a> | <a href="deposit.html">Deposit</a> | <a href="transfer.html">Transfer</a> | <a href="balance.html">Balance</a> | <a href="home.html">Move to Top</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS and Popper.js -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+  <script>
+    // Script to handle logout modal
+    const usernameLink = document.getElementById('username');
+    const logoutModal = document.getElementById('logoutModal');
+    const logoutButton = document.getElementById('logout-btn');
+
+    usernameLink.addEventListener('click', () => {
+        $(logoutModal).modal('show');
+    });
+
+    logoutButton.addEventListener('click', () => {
+        // Redirect to index.html on logout
+        window.location.href = 'index.html';
+    });
+</script>
+
+</body>
+
+</html>
