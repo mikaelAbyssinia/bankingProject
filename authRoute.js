@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {User} = require('./models')
+const {User, Account} = require('./models')
 const bcrypt = require('bcrypt');
 
 router.post('/register', async(req, res) => {
@@ -8,6 +8,13 @@ router.post('/register', async(req, res) => {
       const { name, email, username, password } = req.body;
       const newUser = new User({ name, email, username, password });
       const savedUser = await newUser.save();
+
+      const newAccount = new Account({
+        userId: savedUser._id, // Link the account to the newly created user
+        accountNumber: generateUniqueAccountNumber(), // Assuming you have a function to generate a unique account number
+        balance: 0, // Set initial balance as needed
+    });
+    await newAccount.save();
       console.log(name, email, username, password);
       res.status(200).json({ message: 'data has been saved in the database!!' });
     }
@@ -53,9 +60,10 @@ router.post('/login', async (req, res) => {
     }
     });
 
-    
+
+  
   router.get('/home', async(req, res) => {
-    console.log(req.session.user);
+    console.log(req.session);
     if (req.session.user) {
         const loggedInUsername = req.session.user.username;
         console.log(loggedInUsername);
@@ -78,6 +86,17 @@ router.post('/logout', async(req, res) => {
       res.status(200).json({ message: 'Logout successful' });
   });
 });
+
+function generateUniqueAccountNumber() {
+  // Generate a unique account number using timestamp and random number
+  const timestamp = Date.now().toString(); // Convert current timestamp to a string
+  const randomDigits = Math.floor(Math.random() * 1000); // Generate a random 3-digit number
+
+  // Combine timestamp and random number to create a unique account number
+  const accountNumber = timestamp + randomDigits;
+
+  return accountNumber;
+}
 
 
 module.exports = router;

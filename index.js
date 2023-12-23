@@ -22,27 +22,30 @@ db.once('open', () => {
   console.log('Connected to the database');
 });
 
+app.use(cors({ 
+  origin: 'http://127.0.0.1:3000',  // Specify the allowed origin
+  credentials: true  // Allow credentials (cookies)
+}));
 
-app.use(session({
-  secret: 'your-secret-key',
+
+const sessionMiddleware = session({
+  secret: 'abc',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: 'mongodb://localhost:27017/OurBank',
-    ttl: 60 * 60 * 24, // Time-to-live for sessions in seconds (optional)
+    ttl: 60,
   }),
   cookie: {
-    secure: false, // Set to true if using HTTPS
+    secure: false,
     httpOnly: true,
-    maxAge: 3600000, // 1 hour (adjust as needed)
-},
-  }));
+    maxAge: 3600,
+  },
+});
 
-  
-  app.use(cors({ 
-    origin: 'http://127.0.0.1:3000',  // Specify the allowed origin
-    credentials: true  // Allow credentials (cookies)
-}));
+
+app.use(sessionMiddleware);
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
