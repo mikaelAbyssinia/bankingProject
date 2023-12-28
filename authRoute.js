@@ -29,13 +29,13 @@ router.post('/login', async (req, res) => {
         const { username, password } = req.body;
     
         const user = await User.findOne({ username });
+        console.log(user);
     
         if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });
         }
         // Compare the hashed password
-        console.log(password);
-        console.log(user.password);
+        
         const isPasswordValid = await bcrypt.compare(password, user.password);
     
         if (!isPasswordValid) {
@@ -43,16 +43,13 @@ router.post('/login', async (req, res) => {
         }
         
         // If login is successful, set a session with user information
-        req.session.user = {
-        id: user._id,
-        username: user.username,
-        
-        };
+        req.session.userId = user._id;
 
-        console.log(req.session.user);
+        console.log(req.session);
     
         // Respond with success and user information
-        res.status(200).json({ message: 'Login successful', user: req.session.user, redirect: 'http://127.0.0.1:3000/home.html' });
+        res.status(200).cookie('connect.sid', req.sessionID, { maxAge: 900000, httpOnly: true, secure: true }).json({ message: 'Login successful', redirect: '/home.html'});
+
         
       } catch (error) {
         console.error('Error during login:', error);
@@ -62,17 +59,32 @@ router.post('/login', async (req, res) => {
 
 
   
-  router.get('/home', async(req, res) => {
-    console.log(req.session);
-    if (req.session.user) {
-        const loggedInUsername = req.session.user.username;
-        console.log(loggedInUsername);
-        res.json({ username: loggedInUsername });
-    } else {
-        console.log("problem with session");
-        res.status(401).json({ error: 'User not logged in' });
-    }
-});
+    router.get('/home', async (req, res) => {
+      try {
+          console.log(req.session.userId);
+  
+          if (req.session.userId) {
+              // Assuming you have a User model
+              const user = await User.findById(req.session.userId);
+  
+              if (!user) {
+                  throw new Error('User not found');
+              }
+  
+              const loggedInUsername = user.username;
+              console.log(loggedInUsername);
+  
+              res.json({ username: loggedInUsername });
+          } else {
+              console.log("problem with session");
+              res.status(401).json({ error: 'User not logged in' });
+          }
+      } catch (error) {
+          console.error('Error in /home route:', error);
+          res.status(500).json({ error: 'Internal server error' });
+      }
+  });
+  
 
 
 // Add a new route for logout

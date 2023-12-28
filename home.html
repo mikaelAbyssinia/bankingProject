@@ -125,6 +125,7 @@ function logoutUser() {
       .then(response => response.json())
       .then(data => {
           const usernameDisplay = document.getElementById('usernameDisplay');
+          console.log(data.username);
           if (data.username) {
               usernameDisplay.textContent = data.username;
           }
