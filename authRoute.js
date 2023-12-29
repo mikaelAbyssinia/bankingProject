@@ -1,12 +1,22 @@
 const express = require('express');
-const router = express.Router();
+
 const {User, Account} = require('./models')
-const bcrypt = require('bcrypt');
+
+
+
+
+
 
 router.post('/register', async(req, res) => {
     try{
       const { name, email, username, password } = req.body;
       const newUser = new User({ name, email, username, password });
+
+      const token = await newUser.generateAuthToken();
+          
+          // Set the token in a cookie
+          res.cookie('jwt', token);
+          console.log(token);
       const savedUser = await newUser.save();
 
       const newAccount = new Account({
@@ -24,44 +34,50 @@ router.post('/register', async(req, res) => {
     });
 
 
-router.post('/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-    
-        const user = await User.findOne({ username });
-        console.log(user);
-    
-        if (!user) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-        }
-        // Compare the hashed password
-        
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-    
-        if (!isPasswordValid) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-        }
-        
-        // If login is successful, set a session with user information
-        req.session.userId = user._id;
-
-        console.log(req.session);
-    
-        // Respond with success and user information
-        res.status(200).cookie('connect.sid', req.sessionID, { maxAge: 900000, httpOnly: true, secure: true }).json({ message: 'Login successful', redirect: '/home.html'});
-
-        
+    router.post('/login', async (req, res) => {
+      try {
+          const { username, password } = req.body;
+  
+          const attemptingUser = await User.findOne({ username });
+  
+          if (!attemptingUser) {
+              return res.status(401).json({ error: 'Invalid credentials' });
+          }
+  
+          // Compare the hashed password
+          const isPasswordValid = await bcrypt.compare(password, attemptingUser.password);
+  
+          if (!isPasswordValid) {
+              return res.status(401).json({ error: 'Invalid credentials' });
+          }
+          console.log(attemptingUser);
+          // Generate and save the authentication token
+          const token = await attemptingUser.generateAuthToken();
+          
+          // Set the token in a cookie
+          res.cookie('jwt', token);
+          console.log(token);
+  
+          // Send a success response
+          res.status(200).json({ message: 'Login successful', token });
       } catch (error) {
-        console.error('Error during login:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-    });
+          console.error('Error during login:', error);
+          res.status(500).json({ error: 'Internal server error' });
+      }
+  });
+  
 
 
   
     router.get('/home', async (req, res) => {
       try {
-          console.log(req.session.userId);
+          const verifyToken = async()=>{
+            const verTok = jws.verify(token,"thefirstpersontodevelopscientificunderstanding" );
+            console.log(verTok);
+          }
+
+          verifyToken();
+          
   
           if (req.session.userId) {
               // Assuming you have a User model
