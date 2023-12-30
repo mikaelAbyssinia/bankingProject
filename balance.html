@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Account Page</title>
+  
+  <!-- Link to Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+    html {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    .container {
+      flex: 1;
+    }
+
+    .footer {
+      background-color: #f8f9fa;
+      padding: 20px 0;
+      text-align: center;
+      position: relative;
+      margin-top: auto; /* This pushes the footer to the bottom */
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+
+        <div class="card">
+          <div class="card-header">
+            <h4 class="mb-0">Account Overview</h4>
+          </div>
+          <div class="card-body">
+
+            <!-- Balance Section -->
+            <div class="mb-3">
+              <h5 class="d-inline">Balance: </h5>
+              <span class="badge badge-secondary d-inline" id="balance" onclick="toggleBalance()">Show Balance</span>
+              <div class="mt-2" id="balanceContent" style="display: none;">
+                <!-- Fetch and display balance dynamically here -->
+                <!-- Example: <p>Balance: $1000</p> -->
+              </div>
+            </div>
+            <!-- End Balance Section -->
+
+            <!-- Transaction History Section -->
+            <div>
+              <h5 class="d-inline">Transaction History: </h5>
+              <button class="btn btn-link" type="button" onclick = "fetchTransactionHistory()" data-toggle="collapse" data-target="#transactionHistory" aria-expanded="false" aria-controls="transactionHistory">
+                Show Transactions
+              </button>
+              <div class="collapse mt-2" id="transactionHistory">
+                <!-- Fetch and display transaction history dynamically here -->
+                <!-- Example: <p>Transaction 1: $50</p> -->
+                <!-- Pagination -->
+                <nav aria-label="Page navigation">
+                  <ul class="pagination">
+                    <li class="page-item"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <!-- Add more pages as needed -->
+                  </ul>
+                </nav>
+              </div>
+            </div>
+            <!-- End Transaction History Section -->
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="container">
+      <p>&copy; 2023 Your Bank. All rights reserved.</p>
+      <p>
+        <a href="withdraw.html">Withdraw</a> | <a href="deposit.html">Deposit</a> | <a href="transfer.html">Transfer</a> | <a href="balance.html">Balance</a> | <a href="home.html">Back to HomePage</a>
+      </p>
+    </div>
+  </div>
+  <!-- Link to Bootstrap JS and Popper.js (required for Bootstrap JS) -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <!-- Your custom script for handling toggling of balance visibility -->
+
+<script>
+  async function toggleBalance() {
+    const balanceContent = document.getElementById('balanceContent');
+    const balanceBadge = document.getElementById('balance');
+
+    if (balanceContent.style.display === 'none') {
+      try {
+        // Fetch the balance from the server
+        const response = await fetch('http://localhost:3000/balance', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add any other headers as needed
+            'Authorization': `Bearer ${localStorage.getItem('jwt')}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          balanceContent.innerHTML = `<p>Balance: $${data.balance}</p>`;
+          balanceContent.style.display = 'block';
+          balanceBadge.textContent = 'Hide Balance';
+        } else {
+          alert('Failed to fetch balance. Please try again.');
+          if (response.status === 401) {
+            localStorage.removeItem('jwt');
+            window.location.href = 'index.html';
+        }
+        }
+      } catch (error) {
+      console.error('Error during withdrawal:', error);
+
+      // Check if the error is due to 401 status, then redirect
+      
+    }
+  
+    } else {
+      balanceContent.style.display = 'none';
+      balanceBadge.textContent = 'Show Balance';
+    }
+  }
+
+  async function fetchTransactionHistory() {
+    try {
+      // Fetch the transaction history from the server
+      const response = await fetch('http://localhost:3000/transaction-history', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add any other headers as needed
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const transactionHistory = document.getElementById('transactionHistory');
+        transactionHistory.innerHTML = ''; // Clear existing content
+
+        // Display transaction history
+        data.transactions.forEach(transaction => {
+          const transactionElement = document.createElement('p');
+          transactionElement.textContent = `${transaction.type} : $${transaction.amount} by account:`;
+          transactionHistory.appendChild(transactionElement);
+        });
+
+        // Show the transaction history section
+        $('#transactionHistory').collapse('show');
+      } else {
+        alert('Failed to fetch transaction history. Please try again.');
+        if (response.status === 401) {
+            localStorage.removeItem('jwt');
+            window.location.href = 'index.html';
+        }
+      }
+    } catch (error) {
+      console.error('Error during withdrawal:', error);
+
+      // Check if the error is due to 401 status, then redirect
+      
+    }
+  }
+  
+  </script>
+
+</body>
+</html>

@@ -80,7 +80,7 @@ const transactionSchema = new Schema({
 
   userSchema.methods.generateAuthToken = async function() {
     try {
-      const token = jwt.sign({ _id: this._id }, process.env.SECRET, { expiresIn: '10 minutes' });
+      const token = jwt.sign({ _id: this._id }, process.env.SECRET, { expiresIn: '10 seconds' });
       console.log("the created token during login is " + token);
       this.tokens = [];
       this.tokens = this.tokens.concat({ token: token });

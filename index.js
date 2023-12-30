@@ -96,9 +96,7 @@ app.get('/home', auth,  async (req, res) => {
       // Retrieve the JWT token from the headers
       const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
 
-      if (!token) {
-          return res.status(401).json({ error: 'Unauthorized' });
-      }
+      
       const user = req.user;
 
       const userName = user.username;
@@ -110,9 +108,151 @@ app.get('/home', auth,  async (req, res) => {
   }
 });
 
+app.post('/deposit', auth, async(req, res) => {
+  try{
+    const {amount} = req.body;
+    const user = req.user;
 
+    const account = await Account.findOne({userId: user._id});
+    if (!account) {
+      return res.status(404).json({ error: 'Account not found' });
+    }
+    account.balance = Number(account.balance) + Number(amount);
+    await account.save();
+    res.status(200).json({ message: 'Deposit successful', newBalance: account.balance });
+  }
+  catch(error){
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+})
 
+app.post('/withdraw', auth, async (req, res) => {
+  try {
+    const { amount } = req.body;
+    const user = req.user;
 
+    // Find the user's account
+    const account = await Account.findOne({ userId: user._id });
+
+    if (!account) {
+      return res.status(404).json({ error: 'Account not found' });
+    }
+
+    // Ensure both balance and amount are treated as numbers
+    const currentBalance = Number(account.balance);
+    const withdrawalAmount = Number(amount);
+
+    // Check if the available balance is sufficient for the withdrawal
+    if (currentBalance >= withdrawalAmount) {
+      // Deduct the amount from the account balance
+      account.balance = currentBalance - withdrawalAmount;
+
+      // Save the updated account
+      await account.save();
+
+      // Respond with success message
+      res.status(200).json({ message: 'Withdrawal successful', newBalance: account.balance });
+    } else {
+      res.status(400).json({ error: 'Insufficient funds' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post('/transfer', auth, async (req, res) => {
+  try {
+    const { amount, recipient } = req.body;
+    const user = req.user;
+
+    // Find the user's account
+    const senderAccount = await Account.findOne({ userId: user._id });
+
+    if (!senderAccount) {
+      return res.status(404).json({ error: 'Sender account not found' });
+    }
+
+    // Ensure both balance and amount are treated as numbers
+    const currentBalance = Number(senderAccount.balance);
+    const transferAmount = Number(amount);
+
+    // Check if the sender has sufficient funds for the transfer
+    if (currentBalance >= transferAmount) {
+      // Deduct the amount from the sender's account balance
+      senderAccount.balance = currentBalance - transferAmount;
+
+      // Find the recipient's account
+      const recipientAccount = await Account.findOne({ accountNumber: recipient });
+
+      if (!recipientAccount) {
+        return res.status(404).json({ error: 'Recipient account not found' });
+      }
+
+      // Add the amount to the recipient's account balance
+      recipientAccount.balance += transferAmount;
+
+      // Save both accounts
+      await senderAccount.save();
+      await recipientAccount.save();
+
+      // Record the transaction
+      const transaction = new Transaction({
+        fromAccount: user._id,
+        toAccount: recipientAccount.userId,
+        amount: transferAmount,
+        type: "transfer"
+      });
+
+      await transaction.save();
+
+      // Respond with success message
+      res.status(200).json({ message: 'Transfer successful', newBalance: senderAccount.balance });
+    } else {
+      res.status(400).json({ error: 'Insufficient funds' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/balance', auth, async (req, res) => {
+  try {
+    const user = req.user;
+
+    // Find the user's account
+    const account = await Account.findOne({ userId: user._id });
+
+    if (!account) {
+      return res.status(404).json({ error: 'Account not found' });
+    }
+
+    // Respond with the user's balance
+    res.status(200).json({ balance: account.balance });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/transaction-history', auth, async (req, res) => {
+  try {
+    const user = req.user;
+
+    // Find all transactions related to the user
+    const transactions = await Transaction.find({
+      $or: [{ fromAccount: user._id }],
+    });
+
+    // Respond with the user's transaction history
+    res.status(200).json({ transactions });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 // Add a new route for logout
 app.post('/logout', auth, async(req, res) => {

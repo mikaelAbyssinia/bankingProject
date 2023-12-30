@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Withdrawal Page</title>
+  
+  <!-- Link to Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+    html {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    .container {
+      flex: 1;
+    }
+
+    .footer {
+      background-color: #f8f9fa;
+      padding: 20px 0;
+      text-align: center;
+      position: relative;
+      margin-top: auto; /* This pushes the footer to the bottom */
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+
+        <div class="card">
+          <div class="card-header">
+            <h4 class="mb-0">Withdrawal</h4>
+          </div>
+          <div class="card-body">
+
+            <!-- Withdrawal Form -->
+            <form id="withdrawalForm">
+              <div class="form-group">
+                <label for="amount">Amount:</label>
+                <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter the withdrawal amount" required>
+              </div>
+
+              <button type="button" class="btn btn-primary" onclick="submitWithdrawal()">Withdraw</button>
+            </form>
+            <!-- End Withdrawal Form -->
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="container">
+      <p>&copy; 2023 Your Bank. All rights reserved.</p>
+      <p>
+        <a href="withdraw.html">Withdraw</a> | <a href="deposit.html">Deposit</a> | <a href="transfer.html">Transfer</a> | <a href="balance.html">Balance</a> | <a href="home.html">Back to HomePage</a>
+      </p>
+    </div>
+  </div>
+  <!-- Link to Bootstrap JS and Popper.js (required for Bootstrap JS) -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <!-- Your custom script for handling withdrawal submission -->
+  <script>
+    async function submitWithdrawal() {
+      const token = localStorage.getItem('jwt');
+      const amount = document.getElementById('amount').value;
+
+      try {
+      const response = await fetch('http://localhost:3000/withdraw', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add any other headers as needed
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ amount }),
+      });
+
+      if (response.ok) {
+        alert('Withdrawal submitted successfully!');
+      } else {
+        alert('Failed to submit withdrawal. Please try again.');
+        if (response.status === 401) {
+            localStorage.removeItem('jwt');
+            window.location.href = 'index.html';
+        }
+    } 
+  }
+  catch (error) {
+      console.error('Error during withdrawal:', error);
+
+      // Check if the error is due to 401 status, then redirect
+      
+    }
+  }
+  </script>
+
+</body>
+</html>

@@ -129,13 +129,27 @@ function logoutUser() {
         },
     credentials: 'include',
   })
-      .then(response => response.json())
+  .then(response => {
+    if (response.ok) {
+      return response.json();
+    } else {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+  })
       .then(data => {
           const usernameDisplay = document.getElementById('usernameDisplay');
 
           usernameDisplay.textContent = data.username;
       })
-      .catch(error => console.error('Error fetching username:', error));
+      .catch(error => {
+    console.error('Error fetching username:', error);
+
+    // Check if the error is due to 401 status, then redirect
+    if (error.message.includes('Status: 401')) {
+      localStorage.removeItem('jwt');
+      window.location.href = 'index.html';
+    }
+  });
 
     const usernameLink = document.getElementById('usernameDisplay');
     const logoutModal = document.getElementById('logoutModal');
@@ -159,9 +173,14 @@ function logoutUser() {
         }
       })
       .catch(error => {
-        // Handle fetch error (show an error message or take appropriate action)
-        console.error('Error during logout:', error);
-      });
+    console.error('Error fetching username:', error);
+
+    // Check if the error is due to 401 status, then redirect
+    if (error.message.includes('Status: 401')) {
+      localStorage.removeItem('jwt');
+      window.location.href = 'index.html';
+    }
+  });
   });
 </script>
 

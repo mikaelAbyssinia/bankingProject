@@ -5,6 +5,7 @@ const auth = async (req, res, next) => {
     try {
         // Retrieve the JWT token from the headers
         const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
+        
         console.log(`JWT token from headers: ${token}`);
 
         const verifyUser = jwt.verify(token, process.env.SECRET);
